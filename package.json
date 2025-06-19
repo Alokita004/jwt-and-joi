@@ -1,4 +1,14 @@
 {
+  "name": "project_1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
@@ -8,29 +18,19 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2"
   },
-  "name": "project_1",
-  "version": "1.0.0",
-  "main": "app.js",
-  "scripts": {
-    "test": "jest"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "jest": "^30.0.1",
+    "jest": "^30.0.2",
     "supertest": "^7.1.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Alokita004/jwt-and-joi.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Alokita004/jwt-and-joi/issues"
-  },
-  "homepage": "https://github.com/Alokita004/jwt-and-joi#readme",
-  "description": "",
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
   }
 }
