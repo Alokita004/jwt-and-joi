@@ -12,10 +12,25 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "devDependencies": {
+    "jest": "^30.0.1",
+    "supertest": "^7.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alokita004/jwt-and-joi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Alokita004/jwt-and-joi/issues"
+  },
+  "homepage": "https://github.com/Alokita004/jwt-and-joi#readme",
+  "description": "",
+  "jest": {
+    "testEnvironment": "node"
+  }
 }
