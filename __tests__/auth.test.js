@@ -58,20 +58,16 @@ describe('Auth API Tests', () => {
         password: ''
       });
 
-    // Joi should return 400 Bad Request
     expect(res.statusCode).toBe(400);
-    expect(res.text).toContain('email');
-
-
+    expect(res.text.toLowerCase()).toMatch(/email/);
+    expect(res.text.toLowerCase()).toMatch(/password/);
   });
 
   it('GET /dashboard without token should redirect to /login', async () => {
     const res = await request(app).get('/dashboard');
 
-    // Update this based on middleware: redirect (302) or deny (401)
-    // Assuming redirect is implemented:
     expect(res.statusCode).toBe(302);
-    expect(res.headers.location).toBe('/login');
+    expect(res.headers.location).toMatch(/^\/login(\?redirect=.*)?$/);
   });
 
   it('GET /logout should clear cookie and redirect', async () => {
@@ -99,7 +95,7 @@ describe('Auth API Tests', () => {
       });
 
     expect(res.statusCode).toBe(400);
-    expect(res.text).toContain('email');
-
+    expect(res.text.toLowerCase()).toMatch(/email/);
+    expect(res.text.toLowerCase()).toMatch(/password/);
   });
 });

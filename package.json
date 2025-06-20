@@ -4,7 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "jest --coverage"
+    "start": "node app.js",
+    "test": "set NODE_ENV=test&& jest --coverage",
+    "test:win": "jest --coverage"
+    
   },
   "keywords": [],
   "author": "",
@@ -21,6 +24,7 @@
   "devDependencies": {
     "jest": "^30.0.2",
     "supertest": "^7.1.1"
+    
   },
   "jest": {
     "testEnvironment": "node",
@@ -34,3 +38,4 @@
     }
   }
 }
+

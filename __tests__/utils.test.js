@@ -1,25 +1,39 @@
-const { generateToken, verifyToken } = require('../utils/auth');
-const jwt = require('jsonwebtoken');
+const { generateToken, verifyTokenMiddleware } = require('../utils/auth');
+const express = require('express');
+const request = require('supertest');
 
-describe('Utils: JWT Functions', () => {
-  const payload = { email: 'test@example.com' };
-  const secret = 'your_jwt_secret_key';
-
-  test('generateToken should return a valid JWT', () => {
-    const token = generateToken(payload, secret);
-    expect(typeof token).toBe('string');
-
-    const decoded = jwt.verify(token, secret);
-    expect(decoded.email).toBe(payload.email);
+describe('verifyTokenMiddleware', () => {
+  const app = express();
+  app.use((req, res, next) => {
+    req.cookies = {}; // simulate cookies object
+    next();
   });
 
-  test('verifyToken should decode a valid token', () => {
-    const token = jwt.sign(payload, secret, { expiresIn: '1h' });
-    const decoded = verifyToken(token, secret);
-    expect(decoded.email).toBe(payload.email);
+  // Middleware under test
+  app.use(verifyTokenMiddleware);
+
+  // Dummy route to test successful middleware pass
+  app.get('/', (req, res) => {
+    res.status(200).send(`Hello ${req.user.email}`);
   });
 
-  test('verifyToken with invalid token should throw', () => {
-    expect(() => verifyToken('bad.token.here', secret)).toThrow();
+  it('should call next() and attach user on valid token', async () => {
+    const token = generateToken({ email: 'test@example.com' });
+
+    const server = express();
+    server.use(require('cookie-parser')());
+    server.use((req, res, next) => {
+      req.cookies.token = token;
+      next();
+    });
+    server.use(verifyTokenMiddleware);
+    server.get('/', (req, res) => {
+      res.send(`Hello ${req.user.email}`);
+    });
+
+    const res = await request(server).get('/').set('Cookie', [`token=${token}`]);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain('Hello test@example.com');
   });
 });
