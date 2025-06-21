@@ -7,7 +7,6 @@
     "start": "node app.js",
     "test": "set NODE_ENV=test&& jest --coverage",
     "test:win": "jest --coverage"
-    
   },
   "keywords": [],
   "author": "",
@@ -19,12 +18,14 @@
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "joi": "^17.13.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1",
+    "open": "^10.1.2",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "jest": "^30.0.2",
     "supertest": "^7.1.1"
-    
   },
   "jest": {
     "testEnvironment": "node",
@@ -38,4 +39,3 @@
     }
   }
 }
-

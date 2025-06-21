@@ -1,74 +1,78 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const Joi = require('joi');
+const User = require('../models/User');
+
 const router = express.Router();
-const {
-  validateAuthInput,
-  generateToken,
-  verifyTokenMiddleware
-} = require('../utils/auth');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-const users = []; // In-memory user storage
-
-// Redirect root to login
-router.get('/', (req, res) => res.redirect('/login'));
-
-// Signup Page
-router.get('/signup', (req, res) => {
-  if (process.env.NODE_ENV === 'test') return res.status(200).send('Signup page');
-  res.render('signup', { error: null, success: null });
-});
-
-// Signup Logic
-router.post('/signup', (req, res) => {
-  const { error, value } = validateAuthInput(req.body);
-  if (error) {
-    const messages = error.details.map(detail => detail.message).join(', ');
-    return res.status(400).send(messages);
-  }
-
-  const exists = users.some(u => u.email === value.email);
-  if (exists) return res.status(409).send('User already exists');
-
-  users.push({ email: value.email, password: value.password });
-  return res.status(200).send('Signup successful');
+// Joi schema
+const authSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required()
 });
 
 // Login Page
 router.get('/login', (req, res) => {
-  if (process.env.NODE_ENV === 'test') return res.status(200).send('Login page');
   res.render('login', { error: null });
 });
 
 // Login Logic
-router.post('/login', (req, res) => {
-  const { error, value } = validateAuthInput(req.body);
+router.post('/login', async (req, res) => {
+  const { error, value } = authSchema.validate(req.body);
   if (error) {
-    const messages = error.details.map(detail => detail.message).join(', ');
-    return res.status(400).send(messages);
+    return res.render('login', { error: error.details[0].message });
   }
 
-  const user = users.find(u => u.email === value.email && u.password === value.password);
-  if (!user) return res.status(401).send('Invalid credentials');
+  const { email, password } = value;
+  const user = await User.findOne({ where: { email, password } }); // Consider bcrypt later
+  if (!user) {
+    return res.render('login', { error: 'Invalid email or password' });
+  }
 
-  const token = generateToken({ email: user.email });
-  return res.status(200).json({ token });
+  const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+  res.cookie('token', token, { httpOnly: true });
+  res.redirect('/dashboard');
 });
 
-// Protected Dashboard
-router.get('/dashboard', verifyTokenMiddleware, (req, res) => {
-  return res.status(200).send(`Welcome to the dashboard, ${req.user.email}`);
+// Signup Page
+router.get('/signup', (req, res) => {
+  res.render('signup', { error: null, success: null });
 });
 
-// Logout and clear token
-router.get('/logout', (req, res) => {
+// Signup Logic
+router.post('/signup', async (req, res) => {
+  const { error, value } = authSchema.validate(req.body);
+  if (error) {
+    return res.render('signup', { error: error.details[0].message, success: null });
+  }
+
+  const existing = await User.findOne({ where: { email: value.email } });
+  if (existing) {
+    return res.render('signup', { error: 'User already exists', success: null });
+  }
+
+  await User.create({ email: value.email, password: value.password });
+  res.render('signup', { error: null, success: 'User registered successfully. Please login.' });
+});
+
+// Dashboard
+router.get('/dashboard', (req, res) => {
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).send('Access Denied');
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.render('dashboard', { user: decoded.email });
+  } catch {
+    res.status(400).send('Invalid or expired token');
+  }
+});
+
+// Logout
+router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.redirect('/login');
 });
-
-// Test-only error simulation route
-if (process.env.NODE_ENV === 'test') {
-  router.get('/force-error', (req, res, next) => {
-    next(new Error('Forced error'));
-  });
-}
 
 module.exports = router;
