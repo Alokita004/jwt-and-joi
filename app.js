@@ -20,16 +20,19 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Sync database and start server
-sequelize.sync()
-  .then(() => {
+// Sync database and start server using async/await
+(async () => {
+  try {
+    await sequelize.sync();
     console.log('MySQL DB Connected and Models Synced');
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
       open(`http://localhost:${PORT}/signup`);
     });
-  })
-  .catch(err => console.error('DB Error:', err));
+  } catch (err) {
+    console.error('DB Error:', err);
+  }
+})();
 
 // Routes
 app.use('/', authRoutes);
@@ -41,4 +44,3 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
-
